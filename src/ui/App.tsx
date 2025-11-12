@@ -82,7 +82,7 @@ export default function App(){
       if (evt.type==='status') setStatus(evt.payload)
       if (evt.type==='kline'){
         setData(prev => {
-          const arr = prev[evt.symbol] ? [prev[evt.symbol]] : []
+        const arr = prev[evt.symbol] ? [...prev[evt.symbol]] : [] 
           const bar = evt.bar
           if (arr.length && arr[arr.length-1].t === bar.t) arr[arr.length-1] = bar; else arr.push(bar)
           if (arr.length > 600) arr.shift()
