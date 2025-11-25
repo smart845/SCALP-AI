@@ -1,0 +1,2 @@
+# Python dependencies for Vercel serverless functions
+# Минимальный набор зависимостей для работы API

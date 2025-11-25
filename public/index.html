@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BYAGENT | AI TERMINAL</title>
+    
+    <style>
+        :root {
+            --neon-blue: #00f5ff;
+            --neon-purple: #b300ff;
+            --neon-pink: #ff00d4;
+            --neon-green: #00ff9d;
+            --neon-red: #ff003c;
+            --dark-space: #000010;
+            --deep-space: #050520;
+            --cosmic-purple: #1a0033;
+            --void: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--void);
+            color: white;
+            font-family: 'Courier New', monospace;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Matrix Background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--dark-space) 0%, var(--cosmic-purple) 100%);
+            z-index: -2;
+        }
+
+        .matrix-code {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: var(--neon-blue);
+            z-index: -1; /* Keep z-index -1 */
+        }
+
+        /* Main Layout */
+        .terminal {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            position: relative; /* Add position relative to establish a stacking context */
+            z-index: 1; /* Bring content above the matrix background */
+        }
+
+        /* Mobile Mini-App Frame Adaptation */
+        @media (max-width: 600px) {
+            body {
+                background: var(--deep-space); /* Slightly lighter background for the frame effect */
+            }
+            .terminal {
+                max-width: 100%;
+                margin: 0;
+                padding: 10px; /* Add padding to move content away from the edge */
+                min-height: 100vh;
+                border: 2px solid var(--neon-blue); /* Main frame */
+                box-shadow: 0 0 20px rgba(0, 245, 255, 0.5);
+                background: var(--void); /* Content background */
+            }
+            .cyber-header {
+                padding: 0; /* Remove padding from header since .terminal now has it */
+                margin-bottom: 10px;
+            }
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                padding: 10px;
+            }
+            .signal-matrix {
+                height: auto;
+            }
+            .pulsar-section {
+                padding: 15px;
+            }
+            .pulsar-container {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
+        /* Header - Cyberpunk Style */
+        .cyber-header {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 30px;
+            padding: 20px 0;
+            border-bottom: 2px solid var(--neon-blue);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .cyber-header::before {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                var(--neon-blue), 
+                var(--neon-purple), 
+                var(--neon-pink), 
+                transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        .logo {
+            font-family: 'Courier New', monospace;
+            font-size: 24px;
+            font-weight: 900;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, var(--neon-blue), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px var(--neon-blue);
+        }
+
+        .system-status {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+        }
+
+        .status-tag {
+            padding: 5px 15px;
+            border: 1px solid var(--neon-green);
+            border-radius: 3px;
+            background: rgba(0, 255, 157, 0.1);
+            color: var(--neon-green);
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Main Grid - Brutalist Cyber */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        /* Signal Matrix */
+        .signal-matrix {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--neon-blue);
+            padding: 0;
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+        }
+
+        .matrix-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--neon-blue);
+            background: rgba(0, 245, 255, 0.05);
+        }
+
+        .matrix-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--neon-blue);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .signals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1px;
+            padding: 1px;
+        }
+
+        .signal-node {
+            background: rgba(0, 5, 15, 0.9);
+            padding: 15px;
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .signal-node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(0, 245, 255, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .signal-node:hover {
+            border-color: var(--neon-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+        }
+
+        .signal-node:hover::before {
+            opacity: 1;
+        }
+
+        .signal-pair {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--neon-blue);
+            margin-bottom: 10px;
+        }
+
+        .signal-action {
+            display: inline-block;
+            padding: 3px 10px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            border-radius: 2px;
+            margin-bottom: 10px;
+        }
+
+        .action-buy {
+            background: rgba(0, 255, 157, 0.2);
+            color: var(--neon-green);
+            border: 1px solid var(--neon-green);
+        }
+
+        .action-sell {
+            background: rgba(255, 0, 60, 0.2);
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+        }
+
+        .signal-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .data-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .data-value {
+            color: var(--neon-blue);
+            font-weight: bold;
+        }
+
+        /* Pulsar Section - Enhanced */
+        .pulsar-section {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid var(--neon-purple);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pulsar-container {
+            width: 250px;
+            height: 250px;
+            position: relative;
+            margin: 0 auto 30px;
+        }
+
+        .pulsar-core {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle at 30% 30%, var(--neon-pink) 0%, transparent 50%),
+                radial-gradient(circle at 70% 70%, var(--neon-blue) 0%, transparent 50%),
+                radial-gradient(circle at center, var(--neon-purple) 0%, transparent 70%);
+            position: relative;
+            animation: quantumSpin 4s linear infinite;
+            filter: blur(1px);
+        }
+
+        .quantum-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 2px solid transparent;
+            border-radius: 50%;
+            animation: quantumOrbit 3s linear infinite;
+        }
+
+        .quantum-ring:nth-child(2) {
+            animation-delay: 1s;
+            border-color: var(--neon-blue);
+        }
+
+        .quantum-ring:nth-child(3) {
+            animation-delay: 2s;
+            border-color: var(--neon-purple);
+        }
+
+        .quantum-dot {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--neon-pink);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 20px var(--neon-pink);
+        }
+
+        /* Performance Stats - Cyber Terminal */
+        .performance-terminal {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1px;
+            background: var(--neon-blue);
+            padding: 1px;
+            margin-top: 30px;
+        }
+
+        .stat-block {
+            background: var(--void);
+            padding: 20px;
+            border: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-block::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--neon-blue);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--neon-blue);
+            margin-bottom: 5px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Alert System */
+        .alert-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid var(--neon-red);
+            padding: 20px;
+            z-index: 1000;
+            animation: alertPulse 1s infinite;
+            display: none;
+        }
+
+        .alert-panel.active {
+            display: block;
+        }
+
+        /* Animations */
+        @keyframes quantumSpin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes quantumOrbit {
+            0% { transform: rotate(0deg) scale(1); opacity: 1; }
+            50% { transform: rotate(180deg) scale(1.1); opacity: 0.8; }
+            100% { transform: rotate(360deg) scale(1); opacity: 1; }
+        }
+
+        @keyframes scanline {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 100% 0%; }
+        }
+
+        @keyframes alertPulse {
+            0% { box-shadow: 0 0 5px var(--neon-red); }
+            50% { box-shadow: 0 0 20px var(--neon-red); }
+            100% { box-shadow: 0 0 5px var(--neon-red); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            .signal-matrix {
+                height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="matrix-bg"></div>
+    <pre class="matrix-code" id="matrixCode"></pre>
+
+    <div class="terminal">
+        <header class="cyber-header">
+            <div class="logo">BYAGENT</div>
+            <div style="text-align: center; font-size: 14px; color: var(--neon-pink); display: none;">
+                AI TERMINAL // REAL-TIME SIGNAL MATRIX
+            </div>
+            <div class="system-status">
+                <div class="status-tag" id="systemStatus">STATUS: ONLINE</div>
+                <div class="status-tag" id="timeDisplay">TIME: 00:00:00</div>
+            </div>
+        </header>
+
+        <main class="main-grid">
+            <section class="signal-matrix">
+                <div class="matrix-header">
+                    <div class="matrix-title">ACTIVE TRADING SIGNALS</div>
+                </div>
+                <div class="signals-grid" id="signalsGrid">
+                    <!-- Signals will be injected here -->
+                </div>
+            </section>
+
+            <aside>
+                <div class="pulsar-section">
+                    <h3 style="color: var(--neon-purple); text-align: center; margin-bottom: 20px;">
+                        CORE AI ANALYTICS
+                    </h3>
+                    <div class="pulsar-container">
+                        <div class="pulsar-core">
+                            <div class="quantum-dot"></div>
+                        </div>
+                        <div class="quantum-ring"></div>
+                        <div class="quantum-ring"></div>
+                        <div class="quantum-ring"></div>
+                    </div>
+                    <div class="performance-terminal">
+                        <div class="stat-block">
+                            <div class="stat-value" id="winRate">--%</div>
+                            <div class="stat-label">WIN RATE</div>
+                        </div>
+                        <div class="stat-block">
+                            <div class="stat-value" id="signalCount">--</div>
+                            <div class="stat-label">ACTIVE SIGNALS</div>
+                        </div>
+                        <div class="stat-block">
+                            <div class="stat-value" id="latency">--ms</div>
+                            <div class="stat-label">LATENCY</div>
+                        </div>
+                        <div class="stat-block">
+                            <div class="stat-value" id="uptime">--h</div>
+                            <div class="stat-label">SYSTEM UPTIME</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <div class="alert-panel" id="alertPanel">
+        <h4 style="color: var(--neon-red); margin-bottom: 10px;">!!! CRITICAL ALERT !!!</h4>
+        <div id="alertMessage" style="color: white;">New signal detected.</div>
+    </div>
+
+    <script>
+        // --- Utility Functions ---
+
+        // Function to generate a random number within a range, with a specified number of decimal places
+        function getRandomArbitrary(min, max, decimals) {
+            const str = (Math.random() * (max - min) + min).toFixed(decimals);
+            return parseFloat(str);
+        }
+
+        // Function to format a number to a fixed number of decimal places
+        function formatNumber(num, decimals) {
+            return num.toFixed(decimals);
+        }
+
+        // --- Matrix Background Effect ---
+        function createMatrix() {
+            const container = document.getElementById('matrixCode');
+            const columns = Math.floor(window.innerWidth / 14); // 14px font size
+            const rows = Math.floor(window.innerHeight / 14);
+            const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ';
+            
+            for (let i = 0; i < columns; i++) {
+                const column = document.createElement('div');
+                column.style.position = 'absolute';
+                column.style.left = `${i * 14}px`;
+                column.style.top = `0`;
+                column.style.whiteSpace = 'pre';
+                column.style.wordBreak = 'break-all';
+                column.style.height = '100%';
+                column.style.overflow = 'hidden';
+                
+                let content = '';
+                for (let j = 0; j < rows * 2; j++) {
+                    content += characters[Math.floor(Math.random() * characters.length)] + '\n';
+                }
+                column.textContent = content;
+                
+                // Animate the column
+                const speed = getRandomArbitrary(5, 15, 0) * 1000; // 5 to 15 seconds
+                const delay = getRandomArbitrary(0, 5, 0) * 1000; // 0 to 5 seconds
+                
+                column.style.transition = `transform ${speed}ms linear`;
+                column.style.transform = `translateY(-${rows * 14}px)`;
+                
+                setTimeout(() => {
+                    column.style.transform = `translateY(0)`;
+                    setInterval(() => {
+                        column.style.transition = 'none';
+                        column.style.transform = `translateY(-${rows * 14}px)`;
+                        setTimeout(() => {
+                            column.style.transition = `transform ${speed}ms linear`;
+                            column.style.transform = `translateY(0)`;
+                        }, 50);
+                    }, speed);
+                }, delay);
+
+                container.appendChild(column);
+            }
+        }
+
+        // --- Real-time Data from API ---
+
+        let signals = [];
+        let winRate = 0;
+        let systemUptime = 0;
+        const startTime = Date.now();
+        const API_BASE_URL = window.location.origin;
+
+        async function fetchSignalsFromAPI() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/signals`);
+                const data = await response.json();
+                return data.signals || [];
+            } catch (error) {
+                console.error('Ошибка при получении сигналов:', error);
+                return [];
+            }
+        }
+
+        async function fetchStatsFromAPI() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/stats`);
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Ошибка при получении статистики:', error);
+                return null;
+            }
+        }
+
+        async function updateSignals() {
+            // Получаем сигналы с API
+            const newSignals = await fetchSignalsFromAPI();
+            
+            if (newSignals && newSignals.length > 0) {
+                // Проверяем новые сигналы
+                const oldPairs = new Set(signals.map(s => s.pair));
+                const newPairs = newSignals.filter(s => !oldPairs.has(s.pair));
+                
+                // Показываем алерт для первого нового сигнала
+                if (newPairs.length > 0) {
+                    triggerAlert(newPairs[0]);
+                }
+                
+                signals = newSignals;
+            }
+
+            // Получаем статистику с API
+            const stats = await fetchStatsFromAPI();
+            if (stats) {
+                winRate = stats.avg_confidence || 0;
+            }
+
+            // Обновляем uptime
+            systemUptime = (Date.now() - startTime) / 3600000;
+
+            renderSignals();
+            updateStats();
+        }
+
+        function renderSignals() {
+            const container = document.getElementById('signalsGrid');
+            container.innerHTML = '';
+
+            if (signals.length === 0) {
+                container.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--neon-blue);">Загрузка сигналов...</div>';
+                return;
+            }
+
+            signals.forEach(signal => {
+                const node = document.createElement('div');
+                node.className = 'signal-node';
+                
+                // Форматируем числа
+                const entry = typeof signal.entry === 'number' ? signal.entry.toFixed(signal.entry > 100 ? 2 : 4) : signal.entry;
+                const tp = typeof signal.tp === 'number' ? signal.tp.toFixed(signal.tp > 100 ? 2 : 4) : signal.tp;
+                const sl = typeof signal.sl === 'number' ? signal.sl.toFixed(signal.sl > 100 ? 2 : 4) : signal.sl;
+                
+                node.innerHTML = `
+                    <div class="signal-pair">${signal.pair} <span style="font-size: 10px; color: #666;">[${signal.exchange || 'Binance'}]</span></div>
+                    <div class="signal-action ${signal.action === 'buy' ? 'action-buy' : 'action-sell'}">
+                        ${signal.action.toUpperCase()}
+                    </div>
+                    <div class="signal-data">
+                        <div class="data-item">
+                            <span>ENTRY:</span>
+                            <span class="data-value">${entry}</span>
+                        </div>
+                        <div class="data-item">
+                            <span>TP:</span>
+                            <span class="data-value" style="color: var(--neon-green);">${tp}</span>
+                        </div>
+                        <div class="data-item">
+                            <span>SL:</span>
+                            <span class="data-value" style="color: var(--neon-red);">${sl}</span>
+                        </div>
+                        <div class="data-item">
+                            <span>CONF:</span>
+                            <span class="data-value">${Math.round(signal.confidence)}%</span>
+                        </div>
+                        <div class="data-item">
+                            <span>TIME:</span>
+                            <span class="data-value">${signal.time}</span>
+                        </div>
+                        <div class="data-item">
+                            <span>VOL:</span>
+                            <span class="data-value">${signal.volume ? (signal.volume / 1000000).toFixed(1) + 'M' : 'N/A'}</span>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(node);
+            });
+        }
+
+        function updateStats() {
+            document.getElementById('winRate').textContent = `${formatNumber(winRate, 2)}%`;
+            document.getElementById('signalCount').textContent = signals.length;
+            document.getElementById('latency').textContent = `${getRandomArbitrary(10, 50, 0)}ms`;
+            document.getElementById('uptime').textContent = `${formatNumber(systemUptime, 2)}h`;
+            document.getElementById('timeDisplay').textContent = `TIME: ${new Date().toLocaleTimeString()}`;
+        }
+
+        function triggerAlert(signal) {
+            const alertPanel = document.getElementById('alertPanel');
+            const alertMessage = document.getElementById('alertMessage');
+            
+            alertMessage.innerHTML = `
+                <div>${signal.pair} - ${signal.action.toUpperCase()} SIGNAL</div>
+                <div style="font-size: 10px; margin-top: 5px;">ENTRY: ${signal.entry} | CONFIDENCE: ${signal.confidence}%</div>
+            `;
+            
+            alertPanel.classList.add('active');
+            setTimeout(() => {
+                alertPanel.classList.remove('active');
+            }, 3000);
+        }
+
+        // --- Dynamic Visual Effects ---
+        function dynamicVisualEffects() {
+            // Glitch effect on signal nodes
+            document.querySelectorAll('.signal-node').forEach(node => {
+                if (Math.random() > 0.85) {
+                    node.style.borderColor = 'var(--neon-red)';
+                    setTimeout(() => {
+                        node.style.borderColor = 'transparent';
+                    }, 100);
+                }
+            });
+
+            // Pulsar core color shift
+            const core = document.querySelector('.pulsar-core');
+            if (Math.random() > 0.9) {
+                core.style.filter = `blur(${getRandomArbitrary(1, 3, 0)}px)`;
+            } else {
+                core.style.filter = 'blur(1px)';
+            }
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            createMatrix();
+            renderSignals();
+            updateStats();
+
+            // Первое обновление сразу
+            updateSignals();
+            
+            // Main data update loop (every 30 seconds)
+            setInterval(updateSignals, 30000);
+
+            // Visual effects loop (every 1 second)
+            setInterval(dynamicVisualEffects, 1000);
+
+            // Time update loop (every 1 second)
+            setInterval(updateStats, 1000);
+        });
+    </script>
+</body>
+</html>
